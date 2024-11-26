@@ -1,5 +1,6 @@
 const Event = require('../model/event');
-
+const User = require('../model/User');
+const nodemailer = require('nodemailer');
 exports.createEvent = async (req, res) => {
   try {
     const { name, date, location, description } = req.body;
@@ -57,23 +58,18 @@ exports.deleteEvent = async (req, res) => {
 };
 
 
-const User = require('../model/User');
-const nodemailer = require('nodemailer');
-
 exports.addParticipantToEvent = async (req, res) => {
   try {
     const { eventId, participantId } = req.body;
 
-    // Vérifiez si l'utilisateur existe
     const participant = await User.findById(participantId);
     if (!participant) {
       return res.status(404).json({ message: 'Participant non trouvé' });
     }
 
-    // Ajoutez le participant à l'événement
     const event = await Event.findByIdAndUpdate(
       eventId,
-      { $addToSet: { participants: participantId } }, // $addToSet évite les doublons
+      { $addToSet: { participants: participantId } }, 
       { new: true }
     ).populate('participants');
 
@@ -81,12 +77,11 @@ exports.addParticipantToEvent = async (req, res) => {
       return res.status(404).json({ message: 'Événement non trouvé' });
     }
 
-    // Envoyer un email au participant
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: 'ytoop66@gmail.com',
-        pass: 'xfmz cgue hxkv doho', // Votre mot de passe d'application
+        pass: 'xfmz cgue hxkv doho', 
       },
     });
 

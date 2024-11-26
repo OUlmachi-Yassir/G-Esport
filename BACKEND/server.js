@@ -4,11 +4,14 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const authRoutes = require('./src/routes/auth');
 const eventRoutes = require('./src/routes/eventRoutes');
+const cors = require('cors');
+
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cors());
 
-// Connexion à MongoDB
+
 mongoose
   .connect(process.env.MONGO_URI || 'mongodb://localhost:27017/sports_app', {
     useNewUrlParser: true,
@@ -17,7 +20,7 @@ mongoose
   .then(() => console.log('Connecté à MongoDB'))
   .catch((err) => console.error('Erreur de connexion à MongoDB :', err));
 
-// Routes
+  
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 
