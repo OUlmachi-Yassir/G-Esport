@@ -100,3 +100,29 @@ exports.addParticipantToEvent = async (req, res) => {
   }
 };
 
+
+exports.removeParticipantFromEvent = async (req, res) => {
+  try {
+    const { eventId, participantId } = req.body;
+
+    const participant = await User.findById(participantId);
+    if (!participant) {
+      return res.status(404).json({ message: 'Participant non trouvé' });
+    }
+
+    const event = await Event.findByIdAndUpdate(
+      eventId,
+      { $pull: { participants: participantId } }, 
+      { new: true }
+    ).populate('participants');
+
+    if (!event) {
+      return res.status(404).json({ message: 'Événement non trouvé' });
+    }
+
+    res.status(200).json({ message: 'Participant retiré de l\'événement', event });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la suppression du participant de l\'événement', error });
+  }
+};
+
