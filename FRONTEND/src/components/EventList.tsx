@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../redux/store";
 import { fetchEvents, deleteEvent } from "../redux/eventSlice";
@@ -6,11 +6,14 @@ import EditEventForm from "./EditEvent";
 import { Event as CustomEvent } from "../redux/eventSlice";
 import axios from "axios";
 import AddParticipant from "./participant";
+import { useReactToPrint } from "react-to-print"; 
 
 interface User {
   _id: string;
   name: string;
 }
+
+
 
 const EventList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -21,6 +24,10 @@ const EventList: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
 
+  const contentRef = useRef<HTMLDivElement | null>(null);
+
+    const reactToPrintFn = useReactToPrint({contentRef});
+    
   useEffect(() => {
     const fetchParticipants = async () => {
       try {
@@ -123,13 +130,17 @@ const EventList: React.FC = () => {
 
       {showPopup && selectedEvent && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-4/5 md:w-1/2 lg:w-1/3 relative">
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg w-4/5 md:w-1/2 lg:w-1/3 relative"
+          >
             <button
               onClick={closePopup}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-all"
             >
               ✕
             </button>
+            <div  ref={contentRef}
+            >
             <h2 className="text-2xl font-semibold mb-4">Event Details</h2>
             <p>
               <strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString()}
@@ -140,15 +151,26 @@ const EventList: React.FC = () => {
             <p>
               <strong>Description:</strong> {selectedEvent.description}
             </p>
-            <h3 className="text-xl font-semibold mt-4">Participants:</h3>
-            <ul className="list-disc pl-5">
+            <div className="flex justify-between">
+              <h3 className="text-xl font-semibold mt-4">Participants:</h3>
+              <button
+                onClick={() => reactToPrintFn()}
+                className="mt-4 px-5 py-3 bg-green-200 text-white shadow-2xl rounded-full hover:bg-green-600 transition-all">
+                <svg className="svgIcon" viewBox="0 0 384 512" height="1em" xmlns="http://www.w3.org/2000/svg"><path d="M169.4 470.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 370.8 224 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 306.7L54.6 265.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"></path></svg>
+                  <span className="icon2"></span>
+              </button>
+            </div>
+            
+            <ul className="list-disc pl-5" >
               {selectedEvent.participants?.map((participantId: string) => (
                 <li key={participantId} className="text-gray-700">
                   {getParticipantName(participantId)}
                 </li>
               ))}
             </ul>
+            </div>
             <AddParticipant eventId={selectedEvent._id || ""} onParticipantAdded={handleParticipantAdded} />
+            
           </div>
         </div>
       )}
