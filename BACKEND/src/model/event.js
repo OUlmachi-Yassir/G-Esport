@@ -18,7 +18,8 @@ const eventSchema = new mongoose.Schema({
     required: false,
   },
   participants: {
-    type: [String],
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'User',
     default: [],
   },
 });

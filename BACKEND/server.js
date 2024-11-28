@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const authRoutes = require('./src/routes/auth');
 const eventRoutes = require('./src/routes/eventRoutes');
+const userRoutes = require('./src/routes/userRoutes');
+
 const cors = require('cors');
 
 
@@ -23,6 +25,7 @@ mongoose
   
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/users', userRoutes);  
 
 
 const PORT = process.env.PORT || 5000;
