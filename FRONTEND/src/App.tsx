@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useSelector } from 'react-redux';
 import { RootState } from './redux/store';
 import Login from './components/Login';
+import Register from './components/register'; 
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -17,6 +18,12 @@ const App: React.FC = () => {
           path="/login"
           element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />}
         />
+
+        <Route
+          path="/register"
+          element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />}
+        />
+
         <Route
           path="/dashboard"
           element={
@@ -25,6 +32,7 @@ const App: React.FC = () => {
             </ProtectedRoute>
           }
         />
+
         <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} />} />
       </Routes>
     </Router>
