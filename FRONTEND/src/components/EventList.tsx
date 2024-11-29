@@ -245,7 +245,7 @@ const EventList: React.FC = () => {
       )}
   
       {showPopup && selectedEvent && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-25">
           <div className="bg-white p-6 rounded-lg shadow-lg w-4/5 md:w-1/2 lg:w-1/3 relative">
             <button
               onClick={closePopup}
