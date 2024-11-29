@@ -23,6 +23,9 @@ const EventList: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState<CustomEvent | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [confirmation, setConfirmation] = useState<{ message: string; onConfirm: () => void } | null>(null);
+
 
   const contentRef = useRef<HTMLDivElement | null>(null);
 
@@ -34,6 +37,7 @@ const EventList: React.FC = () => {
         const response = await axios.get("http://localhost:3000/api/users/participant");
         setUsers(response.data);
       } catch (error) {
+        setMessage({ text: "Error fetching participants", type: "error" });
         console.error("Error fetching participants", error);
       }
     };
@@ -46,9 +50,17 @@ const EventList: React.FC = () => {
   }, [dispatch, status]);
 
   const handleDelete = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this event?")) {
-      dispatch(deleteEvent(id));
-    }
+    setConfirmation({
+      message: "Are you sure you want to delete this event?",
+      onConfirm: async () => {
+        try {
+          await dispatch(deleteEvent(id));
+          setMessage({ text: "Event deleted successfully", type: "success" });
+        } catch (error) {
+          setMessage({ text: "Failed to delete event", type: "error" });
+        }
+      },
+    });
   };
 
   const handleEventClick = async (id: string | undefined) => {
@@ -57,7 +69,7 @@ const EventList: React.FC = () => {
       setSelectedEvent(response.data);
       setShowPopup(true);
     } catch (error) {
-      console.error("Error fetching event details", error);
+      setMessage({ text: "Error fetching event details", type: "error" });
     }
   };
 
@@ -71,7 +83,9 @@ const EventList: React.FC = () => {
       try {
         const response = await axios.get(`http://localhost:3000/api/events/${selectedEvent._id}`);
         setSelectedEvent(response.data);
+        setMessage({ text: "Participant added successfully", type: "success" });
       } catch (error) {
+        setMessage({ text: "Failed to reload event details", type: "error" });
         console.error("Error reloading event details", error);
       }
     }
@@ -79,23 +93,24 @@ const EventList: React.FC = () => {
 
 
   const handleRemoveParticipant = async (eventId: string, participantId: string) => {
-    if (window.confirm("Are you sure you want to remove this participant?")) {
-      try {
-        const response = await axios.post("http://localhost:3000/api/events/removeParticipant", {
-          eventId,
-          participantId,
-        });
-  
-        if (response.status === 200) {
-          alert("Participant removed successfully");
-          const updatedEvent = await axios.get(`http://localhost:3000/api/events/${eventId}`);
-          setSelectedEvent(updatedEvent.data);
+    setConfirmation({
+      message: "Are you sure you want to remove this participant?",
+      onConfirm: async () => {
+        try {
+          const response = await axios.post("http://localhost:3000/api/events/removeParticipant", {
+            eventId,
+            participantId,
+          });
+          if (response.status === 200) {
+            setMessage({ text: "Participant removed successfully", type: "success" });
+            const updatedEvent = await axios.get(`http://localhost:3000/api/events/${eventId}`);
+            setSelectedEvent(updatedEvent.data);
+          }
+        } catch (error) {
+          setMessage({ text: "Failed to remove participant", type: "error" });
         }
-      } catch (error) {
-        console.error("Error removing participant:", error);
-        alert("Failed to remove participant. Please try again.");
-      }
-    }
+      },
+    });
   };
   
 
@@ -106,7 +121,41 @@ const EventList: React.FC = () => {
 
   return (
     <div className="container mx-auto p-6">
+       {message && (
+        <div
+          className={`mb-4 p-4 rounded-lg text-center ${
+            message.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
       <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">Event List</h2>
+
+      {confirmation && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <p className="mb-4">{confirmation.message}</p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => {
+                  confirmation.onConfirm();
+                  setConfirmation(null);
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-800"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => setConfirmation(null)}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-800"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
   
       {status === "loading" ? (
         <div className="text-center text-gray-600">Loading...</div>
@@ -155,9 +204,9 @@ const EventList: React.FC = () => {
                       className="px-3 py-1 bg-white text-white rounded-full hover:shadow-2xl hover:bg-yellow-300 transition-all "
                     >
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 21H21" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M7 17V13L17 3L21 7L11 17H7Z" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M14 6L18 10" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 21H21" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M7 17V13L17 3L21 7L11 17H7Z" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M14 6L18 10" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
 
                     </button>
@@ -177,9 +226,9 @@ const EventList: React.FC = () => {
                         >
                           <path
                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            stroke-width="2"
-                            stroke-linejoin="round"
-                            stroke-linecap="round"
+                            strokeWidth="2"
+                            strokeLinejoin="round"
+                            strokeLinecap="round"
                           ></path>
                         </svg>
                     </button>
