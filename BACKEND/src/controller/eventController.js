@@ -1,6 +1,9 @@
 const Event = require('../model/event');
 const User = require('../model/User');
 const nodemailer = require('nodemailer');
+require('dotenv').config(); 
+
+
 exports.createEvent = async (req, res) => {
   try {
     const { name, date, location, description } = req.body;
@@ -80,13 +83,13 @@ exports.addParticipantToEvent = async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'ytoop66@gmail.com',
-        pass: 'xfmz cgue hxkv doho', 
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD, 
       },
     });
 
     const mailOptions = {
-      from: 'ytoop66@gmail.com',
+      from: process.env.EMAIL,
       to: participant.email,
       subject: 'Confirmation d\'inscription',
       text: `Bonjour ${participant.name},\n\nVous êtes inscrit à l'événement : ${event.name}.\n\nMerci !`,
