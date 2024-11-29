@@ -10,7 +10,7 @@ jest.mock('jsonwebtoken', () => ({
 
 
 beforeEach(async () => {
-    await User.deleteMany({}); // Supprimer tous les utilisateurs avant chaque test
+    await User.deleteMany({}); 
   });
 
 describe('Auth Controller', () => {
